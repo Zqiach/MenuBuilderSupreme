@@ -1,4 +1,5 @@
 import streamlit as st
+from bedrock_helper import generate_recipe_with_claude_haiku
 
 # Title and App Info
 st.title("Menu Builder Supreme")
@@ -36,13 +37,21 @@ def menu_input(day, meal_type):
         ai_protein = st.selectbox(f"Protein for {meal_type.capitalize()}:", default_proteins, key=f"{day}_{meal_type}_protein")
         ai_spice_level = st.selectbox(f"Spice Level for {meal_type.capitalize()}:", default_spice_levels, key=f"{day}_{meal_type}_spice_level")
         ai_randomness = st.slider(f"Randomness Level (Temperature) for {meal_type.capitalize()}:", 0.1, 1.0, 0.7, 0.1, key=f"{day}_{meal_type}_randomness")
-
+        
         if st.button(f"Generate AI {meal_type.capitalize()} Recipe for {day}", key=f"{day}_{meal_type}_ai_generate"):
-            # Simulated AI output (replace with Bedrock integration)
-            meal["title"] = f"AI-Generated {meal_type.capitalize()} Title ({ai_food_type}, {ai_protein})"
-            meal["description"] = f"A {ai_spice_level.lower()} {ai_food_type.lower()} dish with {ai_protein.lower()}."
-            meal["ingredients"] = [f"{ai_protein} - 200g", f"{ai_food_type} seasoning", "Olive oil"]
-            meal["instructions"] = f"1. Prepare the {ai_protein.lower()}.\n2. Season with {ai_food_type.lower()} spices.\n3. Cook to perfection."
+            # Generate recipe using Bedrock
+            recipe = generate_recipe_with_claude_haiku(
+                cuisine=ai_food_type,
+                protein=ai_protein,
+                spice_level=ai_spice_level,
+                temperature=ai_randomness
+            )
+
+            # Save the AI-generated recipe to session state
+            meal["title"] = recipe["title"]
+            meal["description"] = recipe["description"]
+            meal["ingredients"] = recipe["ingredients"]
+            meal["instructions"] = recipe["instructions"]
             meal["ai_generated"] = True
             st.success(f"AI {meal_type.capitalize()} recipe generated!")
 
